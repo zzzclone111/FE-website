@@ -17,9 +17,6 @@ const EMPTY_LOGIN_FORM = {
 };
 
 function App() {
-  // =========================
-  // AUTH
-  // =========================
 
   const [user, setUser] = useState(null);
 
@@ -34,10 +31,6 @@ function App() {
 
   const [loginError, setLoginError] =
     useState("");
-
-  // =========================
-  // PRODUCTS
-  // =========================
 
   const [products, setProducts] =
     useState([]);
@@ -70,11 +63,6 @@ function App() {
 
   const [success, setSuccess] =
     useState("");
-
-  // =========================
-  // PERMISSIONS
-  // Must match backend RBAC
-  // =========================
 
   const ROLE_PERMISSIONS = {
     admin: [
@@ -120,10 +108,6 @@ function App() {
   const canDeleteProducts =
     hasPermission("product.delete");
 
-  // =========================
-  // CHECK AUTH
-  // =========================
-
   const checkAuth = async () => {
     try {
       setAuthLoading(true);
@@ -162,17 +146,9 @@ function App() {
     }
   };
 
-  // =========================
-  // INITIAL AUTH CHECK
-  // =========================
-
   useEffect(() => {
     checkAuth();
   }, []);
-
-  // =========================
-  // LOGIN
-  // =========================
 
   const handleLoginChange = (event) => {
     const { name, value } =
@@ -261,10 +237,6 @@ function App() {
     }
   };
 
-  // =========================
-  // LOGOUT
-  // =========================
-
   const handleLogout = async () => {
     try {
       await fetch(
@@ -300,10 +272,6 @@ function App() {
     }
   };
 
-  // =========================
-  // SESSION EXPIRED
-  // =========================
-
   const handleUnauthorized = () => {
     setUser(null);
 
@@ -316,10 +284,6 @@ function App() {
       "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
     );
   };
-
-  // =========================
-  // LOAD PRODUCTS
-  // =========================
 
   const loadProducts = async (
     page = 1
@@ -388,19 +352,11 @@ function App() {
     }
   };
 
-  // =========================
-  // LOAD AFTER LOGIN
-  // =========================
-
   useEffect(() => {
     if (user) {
       loadProducts(1);
     }
   }, [user]);
-
-  // =========================
-  // PRODUCT FORM CHANGE
-  // =========================
 
   const handleChange = (event) => {
     const { name, value } =
@@ -412,18 +368,10 @@ function App() {
     }));
   };
 
-  // =========================
-  // RESET PRODUCT FORM
-  // =========================
-
   const resetForm = () => {
     setForm(EMPTY_FORM);
     setEditingId(null);
   };
-
-  // =========================
-  // EDIT PRODUCT
-  // =========================
 
   const handleEdit = (product) => {
     if (!canUpdateProducts) {
@@ -458,10 +406,6 @@ function App() {
       behavior: "smooth",
     });
   };
-
-  // =========================
-  // DELETE PRODUCT
-  // =========================
 
   const handleDelete = async (id) => {
     if (!canDeleteProducts) {
@@ -538,10 +482,6 @@ function App() {
       );
     }
   };
-
-  // =========================
-  // SUBMIT PRODUCT
-  // =========================
 
   const handleSubmit = async (
     event
@@ -720,10 +660,6 @@ function App() {
     }
   };
 
-  // =========================
-  // PAGE CHANGE
-  // =========================
-
   const handlePageChange = (
     page
   ) => {
@@ -742,10 +678,6 @@ function App() {
     loadProducts(page);
   };
 
-  // =========================
-  // FORMAT PRICE
-  // =========================
-
   const formatPrice = (
     price
   ) => {
@@ -763,10 +695,6 @@ function App() {
     ).format(number);
   };
 
-  // =========================
-  // AUTH LOADING
-  // =========================
-
   if (authLoading) {
     return (
       <div className="auth-page">
@@ -780,11 +708,7 @@ function App() {
       </div>
     );
   }
-
-  // =========================
-  // LOGIN PAGE
-  // =========================
-
+  
   if (!user) {
     return (
       <div className="auth-page">
@@ -895,10 +819,6 @@ function App() {
     );
   }
 
-  // =========================
-  // MAIN APPLICATION
-  // =========================
-
   return (
     <div className="app">
       <header className="header">
@@ -964,9 +884,7 @@ function App() {
           </div>
         )}
 
-        {/* =========================
-            ADMIN PRODUCT FORM
-        ========================= */}
+        {}
 
         {canCreateProducts || canUpdateProducts ? (
           <section className="card form-card">
@@ -1209,9 +1127,7 @@ function App() {
           </section>
         ) : null}
 
-        {/* =========================
-            PRODUCT LIST
-        ========================= */}
+        {}
 
         <section className="card">
           <div className="card-header">
