@@ -71,7 +71,54 @@ function App() {
   const [success, setSuccess] =
     useState("");
 
-  const isAdmin = user?.role === "admin";
+  // =========================
+  // PERMISSIONS
+  // Must match backend RBAC
+  // =========================
+
+  const ROLE_PERMISSIONS = {
+    admin: [
+      "product.read",
+      "product.create",
+      "product.update",
+      "product.delete",
+    ],
+
+    manager: [
+      "product.read",
+      "product.create",
+      "product.update",
+    ],
+
+    staff: [
+      "product.read",
+      "product.create",
+    ],
+
+    viewer: [
+      "product.read",
+    ],
+  };
+
+  const hasPermission = (permission) =>
+    Boolean(
+      user &&
+        (ROLE_PERMISSIONS[user.role] || []).includes(
+          permission
+        )
+    );
+
+  const canReadProducts =
+    hasPermission("product.read");
+
+  const canCreateProducts =
+    hasPermission("product.create");
+
+  const canUpdateProducts =
+    hasPermission("product.update");
+
+  const canDeleteProducts =
+    hasPermission("product.delete");
 
   // =========================
   // CHECK AUTH
@@ -293,6 +340,14 @@ function App() {
         return;
       }
 
+      if (response.status === 403) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(
+          result.error ||
+            "Tài khoản không có quyền xem danh sách sản phẩm."
+        );
+      }
+
       const result =
         await response.json();
 
@@ -371,7 +426,10 @@ function App() {
   // =========================
 
   const handleEdit = (product) => {
-    if (!isAdmin) {
+    if (!canUpdateProducts) {
+      setError(
+        "Bạn không có quyền chỉnh sửa sản phẩm."
+      );
       return;
     }
 
@@ -406,7 +464,10 @@ function App() {
   // =========================
 
   const handleDelete = async (id) => {
-    if (!isAdmin) {
+    if (!canDeleteProducts) {
+      setError(
+        "Bạn không có quyền xóa sản phẩm."
+      );
       return;
     }
 
@@ -487,7 +548,11 @@ function App() {
   ) => {
     event.preventDefault();
 
-    if (!isAdmin) {
+    const requiredPermission = editingId
+      ? "product.update"
+      : "product.create";
+
+    if (!hasPermission(requiredPermission)) {
       setError(
         "Bạn không có quyền thực hiện thao tác này."
       );
@@ -863,9 +928,12 @@ function App() {
                 </strong>
 
                 <span>
-                  {isAdmin
-                    ? "Quản trị viên"
-                    : user.role}
+                  {{
+                    admin: "Quản trị viên",
+                    manager: "Quản lý kho",
+                    staff: "Nhân viên kho",
+                    viewer: "Chỉ xem",
+                  }[user.role] || user.role}
                 </span>
               </div>
             </div>
@@ -900,7 +968,7 @@ function App() {
             ADMIN PRODUCT FORM
         ========================= */}
 
-        {isAdmin && (
+        {canCreateProducts || canUpdateProducts ? (
           <section className="card form-card">
             <div className="card-header">
               <div>
@@ -1139,7 +1207,7 @@ function App() {
               </div>
             </form>
           </section>
-        )}
+        ) : null}
 
         {/* =========================
             PRODUCT LIST
@@ -1153,8 +1221,15 @@ function App() {
               </h2>
 
               <p>
-                {pagination.total} sản phẩm
-                trong kho
+                {pagination.total} sản phẩm trong kho
+                {" · "}
+                {canDeleteProducts
+                  ? "Toàn quyền quản lý"
+                  : canUpdateProducts
+                  ? "Có thể thêm và chỉnh sửa"
+                  : canCreateProducts
+                  ? "Có thể thêm sản phẩm"
+                  : "Chỉ xem dữ liệu"}
               </p>
             </div>
 
@@ -1189,7 +1264,7 @@ function App() {
                   <th>Đơn giá</th>
                   <th>Mô tả</th>
 
-                  {isAdmin && (
+                  {(canUpdateProducts || canDeleteProducts) && (
                     <th>
                       Thao tác
                     </th>
@@ -1202,7 +1277,7 @@ function App() {
                   <tr>
                     <td
                       colSpan={
-                        isAdmin
+                        canUpdateProducts || canDeleteProducts
                           ? 9
                           : 8
                       }
@@ -1216,7 +1291,7 @@ function App() {
                   <tr>
                     <td
                       colSpan={
-                        isAdmin
+                        canUpdateProducts || canDeleteProducts
                           ? 9
                           : 8
                       }
@@ -1277,32 +1352,32 @@ function App() {
                             "—"}
                         </td>
 
-                        {isAdmin && (
+                        {(canUpdateProducts || canDeleteProducts) && (
                           <td>
                             <div className="action-buttons">
-                              <button
-                                type="button"
-                                className="btn btn-edit"
-                                onClick={() =>
-                                  handleEdit(
-                                    product
-                                  )
-                                }
-                              >
-                                Sửa
-                              </button>
+                              {canUpdateProducts && (
+                                <button
+                                  type="button"
+                                  className="btn btn-edit"
+                                  onClick={() =>
+                                    handleEdit(product)
+                                  }
+                                >
+                                  Sửa
+                                </button>
+                              )}
 
-                              <button
-                                type="button"
-                                className="btn btn-delete"
-                                onClick={() =>
-                                  handleDelete(
-                                    product.id
-                                  )
-                                }
-                              >
-                                Xóa
-                              </button>
+                              {canDeleteProducts && (
+                                <button
+                                  type="button"
+                                  className="btn btn-delete"
+                                  onClick={() =>
+                                    handleDelete(product.id)
+                                  }
+                                >
+                                  Xóa
+                                </button>
+                              )}
                             </div>
                           </td>
                         )}
